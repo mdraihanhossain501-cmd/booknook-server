@@ -57,7 +57,12 @@ app.get("/books", async (req, res) => {
 
     let cursor = booksCollection.find(query);
     if (sort === "newest") cursor = cursor.sort({ addedAt: -1 });
-    if (limit) cursor = cursor.limit(Number(limit));
+      if (limit) {
+      const limitNumber = Number(limit);
+      if (Number.isInteger(limitNumber) && limitNumber > 0) {
+        cursor = cursor.limit(Math.min(limitNumber, 50));
+      }
+    }
 
     const books = await cursor.toArray();
     res.send(books);
