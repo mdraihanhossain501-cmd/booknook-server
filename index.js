@@ -305,6 +305,11 @@ app.delete("/borrows/:id", verifyJWT, async (req, res) => {
   }
 });
 
+// Unknown routes
+app.use((req, res) => {
+  res.status(404).send({ message: "Route not found" });
+});
+
 // Run a local server only when not on Vercel
 if (!process.env.VERCEL) {
   app.listen(port, () => {
