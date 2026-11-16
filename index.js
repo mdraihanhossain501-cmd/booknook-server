@@ -51,9 +51,10 @@ app.get("/", (req, res) => {
 // GET /books (public)
 app.get("/books", async (req, res) => {
   try {
-    const { email, sort, limit } = req.query;
+    const { email, sort, limit, category } = req.query;
     const query = {};
     if (email) query.userEmail = email;
+    if (category) query.category = category;
 
     let cursor = booksCollection.find(query);
     if (sort === "newest") cursor = cursor.sort({ addedAt: -1 });
