@@ -18,8 +18,8 @@ Express and MongoDB API for the BookNook online library.
 
 ## Environment variables
 
-MONGODB_URI=mongodb+srv://mdraihanhossain501_db_user:BR4ldLqWAG7Xxf2O@cluster0.zyprcq6.mongodb.net/
-JWT_SECRET=4d24da85162e010c49ad4ffaf955fded0d371b406f25ec51b2acebace0b79795
+- `MONGODB_URI`
+- `JWT_SECRET`
 
 ## Run locally
 
