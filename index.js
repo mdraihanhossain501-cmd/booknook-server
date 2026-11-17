@@ -22,6 +22,11 @@ const db = client.db("booknook");
 const booksCollection = db.collection("books");
 const borrowsCollection = db.collection("borrows");
 
+// One borrow per user per book, even if two requests arrive at once
+borrowsCollection
+  .createIndex({ bookId: 1, userEmail: 1 }, { unique: true })
+  .catch((error) => console.error("Index error:", error.message));
+
 // Checks the JWT sent in the Authorization header
 function verifyJWT(req, res, next) {
   const header = req.headers.authorization;
@@ -58,7 +63,7 @@ app.get("/books", async (req, res) => {
 
     let cursor = booksCollection.find(query);
     if (sort === "newest") cursor = cursor.sort({ addedAt: -1 });
-      if (limit) {
+    if (limit) {
       const limitNumber = Number(limit);
       if (Number.isInteger(limitNumber) && limitNumber > 0) {
         cursor = cursor.limit(Math.min(limitNumber, 50));
@@ -189,6 +194,8 @@ app.delete("/books/:id", verifyJWT, async (req, res) => {
     }
 
     const result = await booksCollection.deleteOne({ _id: new ObjectId(id) });
+    // Remove the borrow records of the deleted book
+    await borrowsCollection.deleteMany({ bookId: id });
     res.send(result);
   } catch (error) {
     res.status(500).send({ message: "Failed to delete the book" });
@@ -254,6 +261,11 @@ app.post("/borrows", verifyJWT, async (req, res) => {
         { _id: new ObjectId(bookId) },
         { $inc: { copies: 1 } }
       );
+      if (insertError.code === 11000) {
+        return res
+          .status(409)
+          .send({ message: "You have already borrowed this book" });
+      }
       throw insertError;
     }
   } catch (error) {
